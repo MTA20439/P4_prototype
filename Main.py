@@ -24,7 +24,7 @@ class ReadButtonThread(threading.Thread):
                 # board.digital[13].write(1)
             else:
                 if self.isPlaying is True:
-                    #sd.stop()
+                    # sd.stop()
                     sd.play(self.sound)
                     self.isPlaying = False
                 # board.digital[13].write(0)"""
@@ -48,20 +48,24 @@ def create_sinusoid(freq, tim):
     return sinusoid
 
 
-board = pyfirmata.Arduino('COM3')
+"""setting up which usb port is the arduino connected to"""
+board = pyfirmata.Arduino('COM3')  # might want to change this based on your pc
 
+"""Initialize communication with the arduino board"""
 it = pyfirmata.util.Iterator(board)
 it.start()
 
-notes = [261.63, 293.66, 329.63]
-pins = [10, 8, 7]
-sounds = []
+"""Arrays for storing some initial data"""
+notes = [261.63, 293.66, 329.63]  # note array for making sinusoid
+pins = [10, 8, 7]  # array of pins
+sounds = []  # array for storing sounds we want the threads to play
 
+"""A for loop for making sounds"""
 for i in notes:
     note = np.array(create_sinusoid(i, 4))
     sounds.append(note)
 
-
+"""A for loop for making threads and assigning them sounds"""
 for i in range(len(sounds)):
     t = ReadButtonThread(pins[i], sounds[i])
     t.start()
