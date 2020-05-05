@@ -43,7 +43,6 @@ audioBuffer = AudioBuffer()
 
 
 def callback(outdata, frames, time, status):
-    audioBuffer = AudioBuffer()
     outdata[:, 0] = audioBuffer.getNext(frames)
 
 """

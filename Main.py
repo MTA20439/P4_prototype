@@ -2,9 +2,9 @@ import threading
 import pyfirmata
 import time
 import sounddevice as sd
-import numpy as np
 
 from Player import AudioBuffer, makeSomeNoise, genKarplusStrong, callback
+from SongDatabase import SongDatabase
 
 
 class ReadButtonThread(threading.Thread):
@@ -63,6 +63,7 @@ for i in notes:
     noise.extend([0] * samplerate * 5)
     string = genKarplusStrong(noise, samplerate, i, 0.995)
     sounds.append(string)
+
 
 """A for loop for making threads and assigning them sounds"""
 for i in range(len(sounds)):
