@@ -5,9 +5,11 @@ from itertools import zip_longest
 
 samplerate = 44100
 
+
 class AudioBuffer:
     def __init__(self):
         self.buffer = [0]
+
     def getNext(self, frames):
         if frames > len(self.buffer):
             print("end of buffer; extending")
@@ -15,11 +17,14 @@ class AudioBuffer:
         out = self.buffer[:frames]
         self.buffer = self.buffer[frames:]
         return out
+
     def addToBuffer(self, sample):
-        self.buffer = [x + y for x,y in zip_longest(sample, self.buffer, fillvalue=0)]
+        self.buffer = [x + y for x, y in zip_longest(sample, self.buffer, fillvalue=0)]
+
 
 def makeSomeNoise(amplitude, samplerate, duration):
     return [(random.uniform(-amplitude, amplitude)) for _ in range(int(samplerate * duration))]
+
 
 def genKarplusStrong(NoiseBurst, samplerate, freq, decay):
     print("Applying Karplus Strong")
@@ -30,14 +35,18 @@ def genKarplusStrong(NoiseBurst, samplerate, freq, decay):
     while idx < len(output):
         output[idx] = decay * 0.5 * (output[idx - delay] + output[idx - delay - 1])
         idx += 1
-        
+
     return output
+
 
 audioBuffer = AudioBuffer()
 
-def callback(outdata, frames, time, status):
-    outdata[:,0] = audioBuffer.getNext(frames)
 
+def callback(outdata, frames, time, status):
+    audioBuffer = AudioBuffer()
+    outdata[:, 0] = audioBuffer.getNext(frames)
+
+"""
 noise = makeSomeNoise(1, samplerate, 0.01)
 noise.extend([0] * samplerate * 5)
 string1 = genKarplusStrong(noise, samplerate, 329.63, 0.995)
@@ -58,19 +67,21 @@ noise = makeSomeNoise(1, samplerate, 0.01)
 noise.extend([0] * samplerate * 5)
 string5 = genKarplusStrong(noise, samplerate, 130.81, 0.995)
 
-all = [x + y for x,y in zip_longest([x + y for x,y in zip_longest([x + y for x,y in zip_longest([x + y for x,y in zip_longest(string1, string2, fillvalue=0)], string3, fillvalue=0)], string4, fillvalue=0)], string5, fillvalue=0)]
-
-with sd.OutputStream(channels = 1, callback = callback):
-    audioBuffer.addToBuffer(string1)
-    sd.sleep(25)
-    audioBuffer.addToBuffer(string2)
-    sd.sleep(25)
-    audioBuffer.addToBuffer(string3)
-    sd.sleep(25)
-    audioBuffer.addToBuffer(string4)
-    sd.sleep(25)
-    audioBuffer.addToBuffer(string5)
-    sd.sleep(2500)
-    audioBuffer.addToBuffer(all)
-
-    sd.sleep(5000)
+all = [x + y for x, y in zip_longest([x + y for x, y in zip_longest([x + y for x, y in zip_longest(
+    [x + y for x, y in zip_longest(string1, string2, fillvalue=0)], string3, fillvalue=0)], string4, fillvalue=0)],
+                                     string5, fillvalue=0)]
+"""
+# with sd.OutputStream(channels=1, callback=callback):
+#     audioBuffer.addToBuffer(string1)
+#     sd.sleep(25)
+#     audioBuffer.addToBuffer(string2)
+#     sd.sleep(25)
+#     audioBuffer.addToBuffer(string3)
+#     sd.sleep(25)
+#     audioBuffer.addToBuffer(string4)
+#     sd.sleep(25)
+#     audioBuffer.addToBuffer(string5)
+#     sd.sleep(2500)
+#     audioBuffer.addToBuffer(all)
+#
+#     sd.sleep(5000)
