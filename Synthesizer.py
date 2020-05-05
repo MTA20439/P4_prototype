@@ -1,4 +1,3 @@
-
 class Synthesizer:
     samplerate = 44100
     def makeSomeNoise(self, amplitude, duration):
