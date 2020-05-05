@@ -1,7 +1,39 @@
+import threading
 import pyfirmata
 import time
 import sounddevice as sd
 import numpy as np
+
+
+class ReadButtonThread(threading.Thread):
+    def __init__(self, pin, sound):
+        threading.Thread.__init__(self)
+        self.pin = pin
+        self.sound = sound
+        self.init_setup_pin()
+        self.isPlaying = False
+
+    def run(self):
+        while True:
+
+            # analog_value = analog_input.read() # for reading the analog pin
+            isPressed = board.digital[self.pin].read()
+            if isPressed is True:
+                if self.isPlaying is False:
+                    self.isPlaying = True
+                # board.digital[13].write(1)
+            else:
+                if self.isPlaying is True:
+                    #sd.stop()
+                    sd.play(self.sound)
+                    self.isPlaying = False
+                # board.digital[13].write(0)"""
+
+            time.sleep(0.1)
+
+    def init_setup_pin(self):
+        board.digital[self.pin].mode = pyfirmata.INPUT
+        # self.analog_input = board.get_pin('a:0:i') # for setting up the analog pin
 
 
 def create_sinusoid(freq, tim):
@@ -16,29 +48,22 @@ def create_sinusoid(freq, tim):
     return sinusoid
 
 
-isPlaying = False
-
 board = pyfirmata.Arduino('COM3')
 
 it = pyfirmata.util.Iterator(board)
 it.start()
 
-board.digital[10].mode = pyfirmata.INPUT
+notes = [261.63, 293.66, 329.63]
+pins = [10, 8, 7]
+sounds = []
 
-middleC = np.array(create_sinusoid(261.63, 10))
-print("done2")
+for i in notes:
+    note = np.array(create_sinusoid(i, 4))
+    sounds.append(note)
 
-while True:
-    sw = board.digital[10].read()
-    if sw is True:
-        board.digital[13].write(1)
-        print(sw)
-        if isPlaying is False:
-            sd.play(middleC)
-            isPlaying = True
 
-    else:
-        board.digital[13].write(0)
-        sd.stop()
-        isPlaying = False
-    time.sleep(0.1)
+for i in range(len(sounds)):
+    t = ReadButtonThread(pins[i], sounds[i])
+    t.start()
+
+print("setup done")
