@@ -1,13 +1,14 @@
 import sounddevice as sd
 from itertools import zip_longest
 
+
 class AdditiveStream:
     def __callback(self, outdata, frames, time, status):
-        outdata[:,0] = self.__getNext(frames)
+        outdata[:, 0] = self.__getNext(frames)
 
     def __init__(self):
         self.buffer = [0]
-        self.stream = sd.OutputStream(channels = 1, callback = self.__callback)
+        self.stream = sd.OutputStream(channels=1, callback=self.__callback)
         self.start()
 
     def start(self):
@@ -25,4 +26,4 @@ class AdditiveStream:
         return out
 
     def play(self, sample):
-        self.buffer = [x + y for x,y in zip_longest(sample, self.buffer, fillvalue=0)]
+        self.buffer = [x + y for x, y in zip_longest(sample, self.buffer, fillvalue=0)]
