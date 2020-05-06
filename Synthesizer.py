@@ -1,16 +1,26 @@
 import random
 import numpy as np
-class Synthesizer:
-    samplerate = 44100
 
-    def makeSomeNoise(self, amplitude, duration):
-        return [(np.random.uniform(-amplitude, amplitude)) for _ in range(int(self.samplerate * duration))]
 
-    def genKarplusStrong(self, NoiseBurst, freq, decay):
+class StringSynthesizer:
+    def __init__(self, samplerate, amplitude, duration, note_freq, decay):
+        self.samplerate = samplerate
+        self.amplitude = amplitude
+        self.duration = duration
+        self.note_freq = note_freq
+        self.decay = decay
+        self.init_makeSomeNoise()
+        self.init_genKarplusStrong()
+        self.isPlaying = False
+
+    def init_makeSomeNoise(self):
+        self.waveform = np.array([(np.random.uniform(-self.amplitude, self.amplitude)) for _ in range(int(self.samplerate * self.duration))])
+
+    def init_genKarplusStrong(self):
         print("Applying Karplus Strong")
-        delay = int(self.samplerate / freq)
-        decay = float(np.clip(0, 1, float(decay)))
-        output = NoiseBurst
+        delay = int(self.samplerate / self.note_freq)
+        decay = float(np.clip(0, 1, float(self.decay)))
+        output = self.waveform
         # idx = delay
         # while idx < len(output):
         # output[idx] = decay * 0.5 * (output[idx - delay] + output[idx - delay - 1])
@@ -18,7 +28,7 @@ class Synthesizer:
         for idx in range(delay, len(output)):
             output[idx] = decay * 0.5 * (output[idx - delay] + output[idx - delay - 1])
 
-        return output
+        self.string = output
 
-    def makeGString(self, duration, amplitude, freq, decay):
-        return self.genKarplusStrong(self.makeSomeNoise(amplitude, duration), freq, decay)
+    def getString(self):
+        return self.string

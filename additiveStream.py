@@ -19,7 +19,7 @@ class AdditiveStream:
 
     def __getNext(self, frames):
         if frames > len(self.buffer):
-            print("end of buffer; extending")
+            #print("end of buffer; extending")
             self.buffer.extend([0] * (frames - len(self.buffer)))
         out = self.buffer[:frames]
         self.buffer = self.buffer[frames:]
