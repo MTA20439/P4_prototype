@@ -1,3 +1,5 @@
+import random
+import numpy as np
 class Synthesizer:
     samplerate = 44100
     def makeSomeNoise(self, amplitude, duration):
