@@ -1,17 +1,19 @@
 import threading
+
+import numpy as np
 import pyfirmata
 import time
 import sounddevice as sd
 
 from Synthesizer import StringSynthesizer
 from additiveStream import AdditiveStream
-from SongDatabase import SongDatabase
 
 
 class ReadButtonThread(threading.Thread):
-    def __init__(self, pin, sound, audio_player):
+    def __init__(self, pin, sound, audio_player, name):
         threading.Thread.__init__(self)
         self.pin = pin
+        self.name = name
         self.audio_player = audio_player
         self.sound = sound
         self.init_setup_pin()
@@ -20,23 +22,28 @@ class ReadButtonThread(threading.Thread):
     def run(self):
         while True:
 
-            # analog_value = analog_input.read() # for reading the analog pin
-            isPressed = board.digital[self.pin].read()
+            value = self.analog_input.read() # for reading the analog pin
+            #isPressed = board.digital[self.pin].read()
+            if value is not None:
+                # print("Thread" + " " + str(self.name) + ": " + str(value))
+                # print("\n")
 
-            if isPressed is True:
-                if self.isPlaying is False:
-                    self.isPlaying = True
-                # board.digital[13].write(1)
-            else:
-                if self.isPlaying is True:
-                    self.audio_player.play(sample=self.sound)
-                    self.isPlaying = False
-                # board.digital[13].write(0)
+                if value > 0.7:
+                    if self.isPlaying is False:
+                        self.audio_player.play(sample=self.sound)
+                        print("poop")
+                        self.isPlaying = True
+                    # board.digital[13].write(1)
+                else:
+                    if self.isPlaying is True:
+                        self.isPlaying = False
+                    # board.digital[13].write(0)
 
             time.sleep(0.1)
 
     def init_setup_pin(self):
-        board.digital[self.pin].mode = pyfirmata.INPUT
+        self.analog_input = board.get_pin(self.pin)
+        #board.digital[self.pin].mode = pyfirmata.INPUT
         # self.analog_input = board.get_pin('a:0:i') # for setting up the analog pin
 
 
@@ -52,7 +59,7 @@ player = AdditiveStream()
 
 """Arrays for storing some initial data"""
 notes = [261.63, 293.66, 329.63]
-pins = [10, 8, 7]  # array of pins
+pins = ['a:0:i', 'a:1:i', 'a:2:i']  # array of pins
 sounds = []  # array for storing sounds we want the threads to play
 
 samplerate = 44100
@@ -63,8 +70,8 @@ for i in notes:
     sounds.append(string)
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(sounds)):
-    t = ReadButtonThread(pins[i], sounds[i].getString(), player)
+for i in range(len(sounds)-1):
+    t = ReadButtonThread(pins[i], sounds[i].getString(), player, i)
     t.start()
 
 print("setup done")
