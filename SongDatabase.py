@@ -20,16 +20,16 @@ class SongDatabase:
     songFour = stringFour.split(" ")
     songFourName = "Super Mario Bros Theme"  # (3 octaves!!)
 
-    songIndex = 0
-    isSelected = False
-
-    if songIndex == 1:
-        isSelected = True
-    elif songIndex == 2:
-        isSelected = True
-    elif songIndex == 3:
-        isSelected = True
-    elif songIndex == 4:
-        isSelected = True
-    else:
-        isSelected = False
+    # songIndex = 0
+    # isSelected = False
+    #
+    # if songIndex == 1:
+    #     isSelected = True
+    # elif songIndex == 2:
+    #     isSelected = True
+    # elif songIndex == 3:
+    #     isSelected = True
+    # elif songIndex == 4:
+    #     isSelected = True
+    # else:
+    #     isSelected = False

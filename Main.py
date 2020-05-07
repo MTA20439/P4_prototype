@@ -7,9 +7,10 @@ import sounddevice as sd
 
 from Synthesizer import StringSynthesizer
 from additiveStream import AdditiveStream
+from GUI import PrototypeGUI
 
 
-class ReadButtonThread(threading.Thread):
+class ReadPiezoThread(threading.Thread):
     def __init__(self, pin, sound, audio_player, name):
         threading.Thread.__init__(self)
         self.pin = pin
@@ -22,8 +23,8 @@ class ReadButtonThread(threading.Thread):
     def run(self):
         while True:
 
-            value = self.analog_input.read() # for reading the analog pin
-            #isPressed = board.digital[self.pin].read()
+            value = self.analog_input.read()  # for reading the analog pin
+            # isPressed = board.digital[self.pin].read()
             if value is not None:
                 # print("Thread" + " " + str(self.name) + ": " + str(value))
                 # print("\n")
@@ -43,8 +44,17 @@ class ReadButtonThread(threading.Thread):
 
     def init_setup_pin(self):
         self.analog_input = board.get_pin(self.pin)
-        #board.digital[self.pin].mode = pyfirmata.INPUT
-        # self.analog_input = board.get_pin('a:0:i') # for setting up the analog pin
+        # board.digital[self.pin].mode = pyfirmata.INPUT
+
+
+def launch_gui(board):
+    myColor3 = '#101C59'
+    GUI = PrototypeGUI(board)
+    GUI.resvar = '960x720'
+    GUI.config(bg=myColor3)
+    GUI.geometry(GUI.resvar)
+    GUI.resizable(0, 0)
+    GUI.mainloop()
 
 
 """setting up which usb port is the arduino connected to"""
@@ -63,6 +73,7 @@ pins = ['a:0:i', 'a:1:i', 'a:2:i']  # array of pins
 sounds = []  # array for storing sounds we want the threads to play
 
 samplerate = 44100
+board.digital[10].mode = pyfirmata.INPUT
 
 """A for loop for making sounds"""
 for i in notes:
@@ -70,8 +81,27 @@ for i in notes:
     sounds.append(string)
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(sounds)-1):
-    t = ReadButtonThread(pins[i], sounds[i].getString(), player, i)
+for i in range(len(sounds) - 1):
+    t = ReadPiezoThread(pins[i], sounds[i].getString(), player, i)
     t.start()
 
 print("setup done")
+isPressed = False
+
+while True:
+    value = board.digital[10].read()
+
+    if value is True:
+
+        if isPressed is False:
+            launch_gui(board)
+            isPressed = True
+
+    else:
+        if isPressed is True:
+            isPressed = False
+    time.sleep(0.1)
+
+
+#launch_gui()
+

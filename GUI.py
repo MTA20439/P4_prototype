@@ -21,8 +21,9 @@ myColor7 = '#E7BC3D'
 
 
 class LightUpLed(threading.Thread):
-    def __init__(self, arr):
+    def __init__(self, arr, board):
         threading.Thread.__init__(self)
+        self.board = board
         self.arr = arr
         self._is_running = True
 
@@ -30,13 +31,16 @@ class LightUpLed(threading.Thread):
         i = 0
         while self._is_running:
             print(self.arr[i])
+            if self.arr[i] == 2.0:
+                self.board.digital[13].write(1)
             time.sleep(1)
+            if self.arr[i] == 2.0:
+                self.board.digital[13].write(0)
             i += 1
             if i >= len(self.arr):
                 print("repeating...")
                 i = 0
                 time.sleep(2)
-
 
     def stop(self):
         self._is_running = False
@@ -44,8 +48,9 @@ class LightUpLed(threading.Thread):
 
 
 class PrototypeGUI(tk.Tk):
-    def __init__(self, *args, **kwargs):  # Function that creates window for prototype GUI
+    def __init__(self, board, *args, **kwargs):  # Function that creates window for prototype GUI
         tk.Tk.__init__(self, *args, **kwargs)
+        self.board = board
         self.songs = SongDatabase()
         self._frame = None
         self.switch_frame(MainMenu)
@@ -169,7 +174,7 @@ class PlayFrame(MainMenu):
                                    font=("Tofino Pro Personal Con Md", 26))
             self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
 
-            t = LightUpLed(led_sequence)
+            t = LightUpLed(led_sequence, master.board)
             t.start()
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
@@ -178,7 +183,6 @@ class PlayFrame(MainMenu):
 
             led_sequence = self.notes_to_led(notes=master.songs.songTwo)
             songName = master.songs.songTwoName
-
 
             self.nowPlayingLabel = tk.Label(self, text="NOW PLAYING", fg="white", background=myColor1, padx="300",
                                             pady="10", font=("BELLABOO", 56)).grid(row=0, column=0)
@@ -189,9 +193,9 @@ class PlayFrame(MainMenu):
             self.nextButton = tk.Button(self, text="NEXT", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
             self.nextButton.config(activebackground=myColor5, activeforeground="white", bd=0,
                                    font=("Tofino Pro Personal Con Md", 26))
-            self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
+            self.nextButton.place(relx=0.9, rely=0.9, anchor=CENTER)
 
-            t = LightUpLed(led_sequence)
+            t = LightUpLed(led_sequence, master.board)
             t.start()
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
@@ -200,7 +204,6 @@ class PlayFrame(MainMenu):
 
             led_sequence = self.notes_to_led(notes=master.songs.songThree)
             songName = master.songs.songThreeName
-
 
             self.nowPlayingLabel = tk.Label(self, text="NOW PLAYING", fg="white", background=myColor1, padx="300",
                                             pady="10", font=("BELLABOO", 56)).grid(row=0, column=0)
@@ -213,7 +216,7 @@ class PlayFrame(MainMenu):
                                    font=("Tofino Pro Personal Con Md", 26))
             self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
 
-            t = LightUpLed(led_sequence)
+            t = LightUpLed(led_sequence, master.board)
             t.start()
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
@@ -229,7 +232,6 @@ class PlayFrame(MainMenu):
             led_sequence = self.notes_to_led(notes=master.songs.songThree)
             songName = master.songs.songFourName
 
-
             self.nowPlayingLabel = tk.Label(self, text="NOW PLAYING", fg="white", background=myColor1, padx="300",
                                             pady="10", font=("BELLABOO", 56)).grid(row=0, column=0)
 
@@ -241,7 +243,7 @@ class PlayFrame(MainMenu):
                                    font=("Tofino Pro Personal Con Md", 26))
             self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
 
-            t = LightUpLed(led_sequence)
+            t = LightUpLed(led_sequence, master.board)
             t.start()
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
@@ -279,7 +281,6 @@ class PlayFrame(MainMenu):
 
     def end_thread(self, thread):
         thread.stop()
-
 
 
 class EndFrame(tk.Frame):
