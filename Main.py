@@ -47,14 +47,42 @@ class ReadPiezoThread(threading.Thread):
         # board.digital[self.pin].mode = pyfirmata.INPUT
 
 
-def launch_gui(board):
-    myColor3 = '#101C59'
-    GUI = PrototypeGUI(board)
-    GUI.resvar = '960x720'
-    GUI.config(bg=myColor3)
-    GUI.geometry(GUI.resvar)
-    GUI.resizable(0, 0)
-    GUI.mainloop()
+class gui:
+    def __init__(self, breadBoard):
+        self.breadBoard = breadBoard
+        self.GUI = PrototypeGUI(breadBoard)
+        self.myColor3 = '#101C59'
+
+    def start(self):
+        self.GUI.resvar = '960x720'
+        self.GUI.config(bg=self.myColor3)
+        self.GUI.geometry(self.GUI.resvar)
+        self.GUI.resizable(0, 0)
+        self.GUI.mainloop()
+
+    def getThread(self):
+        existingThreads = self.GUI.threadList
+        return existingThreads
+
+    def checkIfAlive(self):
+        fram = self.GUI.frame
+        try:
+            val = fram.winfo_exists()
+        except:
+            val = False
+        return val
+
+
+# def launch_gui(breadBoard):
+#     myColor3 = '#101C59'
+#     GUI = PrototypeGUI(breadBoard)
+#     GUI.resvar = '960x720'
+#     GUI.config(bg=myColor3)
+#     GUI.geometry(GUI.resvar)
+#     GUI.resizable(0, 0)
+#     GUI.mainloop()
+#     existingThreads = GUI.threadList
+#     return existingThreads
 
 
 """setting up which usb port is the arduino connected to"""
@@ -87,21 +115,42 @@ for i in range(len(sounds) - 1):
 
 print("setup done")
 isPressed = False
+windowExists = False
+interface = gui(board)
 
 while True:
     value = board.digital[10].read()
 
+    """Checks if button has been pressed"""
     if value is True:
 
         if isPressed is False:
-            launch_gui(board)
-            isPressed = True
+            print("Button pressed")
+            if windowExists is False:
+                interface.start()
+                windowExists = True
 
     else:
         if isPressed is True:
             isPressed = False
-    time.sleep(0.1)
 
+    """Checks if window is still alive"""
+    if interface.checkIfAlive() is False:
+        if windowExists is True:
 
-#launch_gui()
+            """Stopping the tread that GUI had started before being closed"""
+            threads = interface.getThread()
+            if len(threads) is not 0:
+                threads[-1].stop()
+                threads[-1].join()
 
+            del threads
+
+            """Deleting an old interface object and creating a new one under the same name"""
+            old_object = interface
+            interface = gui(board)
+            del old_object
+
+            windowExists = False
+
+    time.sleep(0.2)

@@ -31,11 +31,11 @@ class LightUpLed(threading.Thread):
         i = 0
         while self._is_running:
             print(self.arr[i])
-            if self.arr[i] == 2.0:
-                self.board.digital[13].write(1)
+            self.board.digital[int(self.arr[i])].write(1)
             time.sleep(1)
-            if self.arr[i] == 2.0:
-                self.board.digital[13].write(0)
+            self.board.digital[int(self.arr[i])].write(0)
+            time.sleep(0.5)
+
             i += 1
             if i >= len(self.arr):
                 print("repeating...")
@@ -52,15 +52,16 @@ class PrototypeGUI(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.board = board
         self.songs = SongDatabase()
-        self._frame = None
+        self.frame = None
         self.switch_frame(MainMenu)
+        self.threadList = []
 
     def switch_frame(self, frame_class):  # Function for switching frames
         new_frame = frame_class(self)
-        if self._frame is not None:
-            self._frame.destroy()  # Destroys current window and creates a new one
-        self._frame = new_frame
-        self._frame.grid()
+        if self.frame is not None:
+            self.frame.destroy()  # Destroys current window and creates a new one
+        self.frame = new_frame
+        self.frame.grid()
         # self._frame.pack()
         # self._frame.update()
 
@@ -176,6 +177,7 @@ class PlayFrame(MainMenu):
 
             t = LightUpLed(led_sequence, master.board)
             t.start()
+            master.threadList.append(t)
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
 
@@ -197,6 +199,7 @@ class PlayFrame(MainMenu):
 
             t = LightUpLed(led_sequence, master.board)
             t.start()
+            master.threadList.append(t)
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
 
@@ -218,6 +221,7 @@ class PlayFrame(MainMenu):
 
             t = LightUpLed(led_sequence, master.board)
             t.start()
+            master.threadList.append(t)
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
 
@@ -245,6 +249,7 @@ class PlayFrame(MainMenu):
 
             t = LightUpLed(led_sequence, master.board)
             t.start()
+            master.threadList.append(t)
 
             self.nextButton.config(command=lambda: [master.switch_frame(EndFrame), self.end_thread(t)])
 
@@ -260,13 +265,13 @@ class PlayFrame(MainMenu):
 
     def switch(self, argument):
         switcher = {
-            "A": 0,
-            "B": 1,
-            "C": 2,
-            "D": 3,
-            "E": 4,
-            "F": 5,
-            "G": 6,
+            "A": 2,
+            "B": 3,
+            "C": 4,
+            "D": 5,
+            "E": 6,
+            "F": 7,
+            "G": 9,
         }
         return switcher.get(argument)
 
@@ -281,14 +286,13 @@ class PlayFrame(MainMenu):
 
     def end_thread(self, thread):
         thread.stop()
+        thread.join()
 
 
 class EndFrame(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         tk.Frame.config(self, background=myColor7)
-
-        songName = master.songs.songOneName
 
         self.songEndedLabel = tk.Label(self, text="SONG ENDED", fg="white", background=myColor1, padx="315", pady="10",
                                        font=("BELLABOO", 56)).grid(row=0, column=0)
@@ -315,10 +319,10 @@ class EndFrame(tk.Frame):
         self.newButton.config(command=lambda: master.switch_frame(MainMenu))
 
 
-if __name__ == "__main__":
-    GUI = PrototypeGUI()
-    GUI.resvar = '960x720'
-    GUI.config(bg=myColor3)
-    GUI.geometry(GUI.resvar)
-    GUI.resizable(0, 0)
-    GUI.mainloop()
+# if __name__ == "__main__":
+#     GUI = PrototypeGUI()
+#     GUI.resvar = '960x720'
+#     GUI.config(bg=myColor3)
+#     GUI.geometry(GUI.resvar)
+#     GUI.resizable(0, 0)
+#     GUI.mainloop()
