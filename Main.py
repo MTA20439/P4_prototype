@@ -3,7 +3,6 @@ import threading
 import numpy as np
 import pyfirmata
 import time
-import sounddevice as sd
 
 from Synthesizer import StringSynthesizer
 from additiveStream import AdditiveStream
@@ -73,18 +72,6 @@ class gui:
         return val
 
 
-# def launch_gui(breadBoard):
-#     myColor3 = '#101C59'
-#     GUI = PrototypeGUI(breadBoard)
-#     GUI.resvar = '960x720'
-#     GUI.config(bg=myColor3)
-#     GUI.geometry(GUI.resvar)
-#     GUI.resizable(0, 0)
-#     GUI.mainloop()
-#     existingThreads = GUI.threadList
-#     return existingThreads
-
-
 """setting up which usb port is the arduino connected to"""
 board = pyfirmata.Arduino('COM3')  # might want to change this based on your pc
 
@@ -96,12 +83,12 @@ it.start()
 player = AdditiveStream()
 
 """Arrays for storing some initial data"""
-notes = [261.63, 293.66, 329.63]
-pins = ['a:0:i', 'a:1:i', 'a:2:i']  # array of pins
+notes = [65.41, 73.42, 82.41, 92.50, 103.83, 116.54]
+pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of pins
 sounds = []  # array for storing sounds we want the threads to play
 
 samplerate = 44100
-board.digital[10].mode = pyfirmata.INPUT
+board.digital[5].mode = pyfirmata.INPUT
 
 """A for loop for making sounds"""
 for i in notes:
@@ -109,26 +96,32 @@ for i in notes:
     sounds.append(string)
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(sounds) - 1):
+for i in range(len(sounds) - 4):
     t = ReadPiezoThread(pins[i], sounds[i].getString(), player, i)
     t.start()
 
-print("setup done")
+"""Booleans for checking if GUI is running"""
 isPressed = False
 windowExists = False
+
+"""Making a GUI object"""
 interface = gui(board)
 
+print("setup done")
+
 while True:
-    value = board.digital[10].read()
+    value = board.digital[5].read()
 
     """Checks if button has been pressed"""
     if value is True:
 
         if isPressed is False:
-            print("Button pressed")
+            print("-------------------")
+            print("Learning mode is on")
             if windowExists is False:
-                interface.start()
-                windowExists = True
+                board.digital[6].write(1)  # Lights up the learning mode led
+                interface.start()  # Starts the GUI
+                windowExists = True  # Says that the gui has been started
 
     else:
         if isPressed is True:
@@ -151,6 +144,10 @@ while True:
             interface = gui(board)
             del old_object
 
+            board.digital[6].write(0)  # Turns of the learning mode led off
             windowExists = False
+
+            print("-------------------")
+            print("Learning mode is off")
 
     time.sleep(0.2)

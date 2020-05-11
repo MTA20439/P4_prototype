@@ -265,13 +265,12 @@ class PlayFrame(MainMenu):
 
     def switch(self, argument):
         switcher = {
-            "A": 2,
-            "B": 3,
-            "C": 4,
-            "D": 5,
-            "E": 6,
-            "F": 7,
-            "G": 9,
+            "C": 8,
+            "D": 9,
+            "E": 10,
+            "F": 11,
+            "G": 12,
+            "A": 13,
         }
         return switcher.get(argument)
 
