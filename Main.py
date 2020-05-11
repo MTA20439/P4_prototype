@@ -10,40 +10,39 @@ from GUI import PrototypeGUI
 
 
 class ReadPiezoThread(threading.Thread):
-    def __init__(self, pin, sound, audio_player, name):
+    def __init__(self, pin, sound, audio_player, led):
         threading.Thread.__init__(self)
         self.pin = pin
-        self.name = name
         self.audio_player = audio_player
         self.sound = sound
+        self.led = led
         self.init_setup_pin()
         self.isPlaying = False
+        self.ledAvailable = True
 
     def run(self):
         while True:
 
             value = self.analog_input.read()  # for reading the analog pin
-            # isPressed = board.digital[self.pin].read()
             if value is not None:
-                # print("Thread" + " " + str(self.name) + ": " + str(value))
-                # print("\n")
 
                 if value > 0.7:
                     if self.isPlaying is False:
                         self.audio_player.play(sample=self.sound)
-                        print("poop")
                         self.isPlaying = True
-                    # board.digital[13].write(1)
+                        if self.ledAvailable is True:
+                            board.digital[self.led].write(1)
                 else:
+                    if self.ledAvailable is True:
+                        board.digital[self.led].write(0)
+
                     if self.isPlaying is True:
                         self.isPlaying = False
-                    # board.digital[13].write(0)
 
             time.sleep(0.1)
 
     def init_setup_pin(self):
         self.analog_input = board.get_pin(self.pin)
-        # board.digital[self.pin].mode = pyfirmata.INPUT
 
 
 class gui:
@@ -83,9 +82,11 @@ it.start()
 player = AdditiveStream()
 
 """Arrays for storing some initial data"""
-notes = [65.41, 73.42, 82.41, 92.50, 103.83, 116.54]
+notes = [261.63, 293.66, 329.63, 369.99, 415.30, 466.16]
 pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of pins
+leds = [8, 9, 10, 11, 12, 13]
 sounds = []  # array for storing sounds we want the threads to play
+piezoThreads = []
 
 samplerate = 44100
 board.digital[5].mode = pyfirmata.INPUT
@@ -97,7 +98,8 @@ for i in notes:
 
 """A for loop for making threads and assigning them sounds"""
 for i in range(len(sounds) - 4):
-    t = ReadPiezoThread(pins[i], sounds[i].getString(), player, i)
+    t = ReadPiezoThread(pins[i], sounds[i].getString(), player, leds[i])
+    piezoThreads.append(t)
     t.start()
 
 """Booleans for checking if GUI is running"""
@@ -120,7 +122,12 @@ while True:
             print("Learning mode is on")
             if windowExists is False:
                 board.digital[6].write(1)  # Lights up the learning mode led
+
+                for i in piezoThreads:
+                    i.ledAvailable = False
+
                 interface.start()  # Starts the GUI
+
                 windowExists = True  # Says that the gui has been started
 
     else:
@@ -146,6 +153,9 @@ while True:
 
             board.digital[6].write(0)  # Turns of the learning mode led off
             windowExists = False
+
+            for i in piezoThreads:
+                i.ledAvailable = False
 
             print("-------------------")
             print("Learning mode is off")
