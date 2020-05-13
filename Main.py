@@ -128,7 +128,7 @@ synth = StringSynthesizer(samplerate, 1, 2, 1)
 
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(pins)-4):
+for i in range(len(pins)):
     t = ReadPiezoThread(pins[i], synth, player, leds[i], notes[i])
     piezoThreads.append(t)
     t.start()
