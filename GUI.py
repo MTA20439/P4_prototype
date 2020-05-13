@@ -20,31 +20,32 @@ myColor6 = '#FFA85C'
 myColor7 = '#E7BC3D'
 
 
-class LightUpLed(threading.Thread):
-    def __init__(self, arr, board):
-        threading.Thread.__init__(self)
-        self.board = board
-        self.arr = arr
-        self._is_running = True
-
-    def run(self):
-        i = 0
-        while self._is_running:
-            print(self.arr[i])
-            self.board.digital[int(self.arr[i])].write(1)
-            time.sleep(1)
-            self.board.digital[int(self.arr[i])].write(0)
-            time.sleep(0.5)
-
-            i += 1
-            if i >= len(self.arr):
-                print("repeating...")
-                i = 0
-                time.sleep(2)
-
-    def stop(self):
-        self._is_running = False
-        print("thread ended")
+# class LightUpLed(threading.Thread):
+#     def __init__(self, arr, board):
+#         threading.Thread.__init__(self)
+#         self.board = board
+#         self.arr = arr
+#         self._is_running = True
+#
+#     def run(self):
+#         i = 0
+#         while self._is_running:
+#             #print(self.arr[i])
+#             self.board.digital[int(self.arr[i])].write(1)
+#             time.sleep(1)
+#             self.board.digital[int(self.arr[i])].write(0)
+#             time.sleep(0.5)
+#
+#             i += 1
+#             if i >= len(self.arr):
+#                 print("~~~~~~~~~~~~")
+#                 print("repeating...")
+#                 i = 0
+#                 time.sleep(2)
+#
+#     def stop(self):
+#         self._is_running = False
+#         print("song thread ended")
 
 
 class PrototypeGUI(tk.Tk):
@@ -82,7 +83,6 @@ class MainMenu(tk.Frame):
         hs = 250
         fs = 25
 
-        # tk.Label(self, text=" ", bg=myColor6).grid(row =1, column=0, pady="25")
 
         MainMenu.var = IntVar()
         MainMenu.var.set(0)
@@ -90,24 +90,20 @@ class MainMenu(tk.Frame):
         def show1():
             MainMenu.var.set(1)
             MainMenu.var.get()
-            print(MainMenu.var.get())
 
         def show2():
             MainMenu.var.set(2)
             MainMenu.var.get()
-            print(MainMenu.var.get())
 
         def show3():
             MainMenu.var.set(3)
             MainMenu.var.get()
-            print(MainMenu.var.get())
 
         def show4():
             MainMenu.var.set(4)
             MainMenu.var.get()
-            print(MainMenu.var.get())
 
-        MainMenu.CB1 = tk.Checkbutton(self, text=master.songs.songOneName, font=("Tofino Pro Personal Con Md", fs))
+        MainMenu.CB1 = tk.Checkbutton(self, text=master.songs.songThreeName, font=("Tofino Pro Personal Con Md", fs))
         MainMenu.CB1.grid_propagate(False)
         MainMenu.CB1.configure(background=myColor3, fg="White", activebackground=myColor3, activeforeground="White",
                                selectcolor=myColor5, variable=MainMenu.var, onvalue=1, command=show1)
@@ -118,7 +114,7 @@ class MainMenu(tk.Frame):
                                selectcolor=myColor5, variable=MainMenu.var, onvalue=2, command=show2)
         MainMenu.CB2.grid(row=2, column=0, sticky="W", pady=vs, padx=hs)
 
-        MainMenu.CB3 = tk.Checkbutton(self, text=master.songs.songThreeName, font=("Tofino Pro Personal Con Md", fs))
+        MainMenu.CB3 = tk.Checkbutton(self, text=master.songs.songOneName, font=("Tofino Pro Personal Con Md", fs))
         MainMenu.CB3.configure(bg=myColor3, fg="White", activebackground=myColor3, activeforeground="White",
                                selectcolor=myColor5, variable=MainMenu.var, onvalue=3, command=show3)
         MainMenu.CB3.grid(row=3, column=0, sticky="W", pady=vs, padx=hs)
@@ -147,7 +143,7 @@ class MainMenu(tk.Frame):
         imgHeight = navInfoImage.height()
         imgWidth = navInfoImage.width()
 
-        navInfoCanvas = Canvas(self, highlightthickness=0, bg=myColor3, width=imgWidth, height=imgWidth)
+        navInfoCanvas = Canvas(self, highlightthickness=0, bg=myColor3, width=imgWidth, height=imgHeight)
         navInfoCanvas.grid(row=16, column=0)
         navInfoCanvas.create_image(480, -42, image=navInfoImage)
         self.grid(row=6, column=0)
@@ -161,8 +157,8 @@ class PlayFrame(MainMenu):
 
         if (self.var.get() == 1):
 
-            led_sequence = self.notes_to_led(notes=master.songs.songOne)
-            songName = master.songs.songOneName
+            led_sequence = self.notes_to_led(notes=master.songs.songThree)
+            songName = master.songs.songThreeName
 
             self.nowPlayingLabel = tk.Label(self, text="NOW PLAYING", fg="white", background=myColor1, padx="300",
                                             pady="10", font=("BELLABOO", 56)).grid(row=0, column=0)
@@ -170,12 +166,12 @@ class PlayFrame(MainMenu):
             self.nowPlayingLabel = tk.Label(self, text=songName, fg="white", background=myColor3, padx="0", pady="10",
                                             font=("BELLABOO", 45)).grid(row=1, column=0)
 
-            self.nextButton = tk.Button(self, text="NEXT", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
+            self.nextButton = tk.Button(self, text="STOP", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
             self.nextButton.config(activebackground=myColor5, activeforeground="white", bd=0,
                                    font=("Tofino Pro Personal Con Md", 26))
-            self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
+            self.nextButton.grid(row=2, column=0, sticky="W", pady=100, padx=400)
 
-            t = LightUpLed(led_sequence, master.board)
+            t = self.LightUpLed(led_sequence, master.board)
             t.start()
             master.threadList.append(t)
 
@@ -192,12 +188,12 @@ class PlayFrame(MainMenu):
             self.nowPlayingLabel = tk.Label(self, text=songName, fg="white", background=myColor3, padx="0", pady="10",
                                             font=("BELLABOO", 45)).grid(row=1, column=0)
 
-            self.nextButton = tk.Button(self, text="NEXT", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
+            self.nextButton = tk.Button(self, text="STOP", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
             self.nextButton.config(activebackground=myColor5, activeforeground="white", bd=0,
                                    font=("Tofino Pro Personal Con Md", 26))
-            self.nextButton.place(relx=0.9, rely=0.9, anchor=CENTER)
+            self.nextButton.grid(row=2, column=0, sticky="W", pady=100, padx=400)
 
-            t = LightUpLed(led_sequence, master.board)
+            t = self.LightUpLed(led_sequence, master.board)
             t.start()
             master.threadList.append(t)
 
@@ -205,8 +201,8 @@ class PlayFrame(MainMenu):
 
         elif (self.var.get() == 3):
 
-            led_sequence = self.notes_to_led(notes=master.songs.songThree)
-            songName = master.songs.songThreeName
+            led_sequence = self.notes_to_led(notes=master.songs.songOne)
+            songName = master.songs.songOneName
 
             self.nowPlayingLabel = tk.Label(self, text="NOW PLAYING", fg="white", background=myColor1, padx="300",
                                             pady="10", font=("BELLABOO", 56)).grid(row=0, column=0)
@@ -214,12 +210,12 @@ class PlayFrame(MainMenu):
             self.nowPlayingLabel = tk.Label(self, text=songName, fg="white", background=myColor3,
                                             padx="0", pady="10", font=("BELLABOO", 45)).grid(row=1, column=0)
 
-            self.nextButton = tk.Button(self, text="NEXT", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
+            self.nextButton = tk.Button(self, text="STOP", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
             self.nextButton.config(activebackground=myColor5, activeforeground="white", bd=0,
                                    font=("Tofino Pro Personal Con Md", 26))
             self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
 
-            t = LightUpLed(led_sequence, master.board)
+            t = self.LightUpLed(master = master, arr = led_sequence, board=master.board)
             t.start()
             master.threadList.append(t)
 
@@ -242,12 +238,12 @@ class PlayFrame(MainMenu):
             self.nowPlayingLabel = tk.Label(self, text=songName, fg="white", background=myColor3, padx="0", pady="10",
                                             font=("BELLABOO", 45)).grid(row=1, column=0)
 
-            self.nextButton = tk.Button(self, text="NEXT", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
+            self.nextButton = tk.Button(self, text="STOP", fg="white", bg=myColor5, borderwidth=2, relief=FLAT, padx=25)
             self.nextButton.config(activebackground=myColor5, activeforeground="white", bd=0,
                                    font=("Tofino Pro Personal Con Md", 26))
-            self.nextButton.place(relx=0.85, rely=0.92, anchor=CENTER)
+            self.nextButton.grid(row=2, column=0, sticky="W", pady=100, padx=400)
 
-            t = LightUpLed(led_sequence, master.board)
+            t = self.LightUpLed(master = master, arr = led_sequence, board=master.board)
             t.start()
             master.threadList.append(t)
 
@@ -286,6 +282,34 @@ class PlayFrame(MainMenu):
     def end_thread(self, thread):
         thread.stop()
         thread.join()
+
+    class LightUpLed(threading.Thread):
+        def __init__(self, master, arr, board):
+            threading.Thread.__init__(self)
+            self.master = master
+            self.board = board
+            self.arr = arr
+            self._is_running = True
+
+        def run(self):
+            i = 0
+            while self._is_running:
+                # print(self.arr[i])
+                self.board.digital[int(self.arr[i])].write(1)
+                time.sleep(1)
+                self.board.digital[int(self.arr[i])].write(0)
+                time.sleep(0.5)
+
+                i += 1
+                if i >= len(self.arr):
+                    self.master.switch_frame(EndFrame)
+                    self.stop()
+                    time.sleep(2)
+
+        def stop(self):
+            self._is_running = False
+            print("~~~~~~~~~~~~")
+            print("song thread ended")
 
 
 class EndFrame(tk.Frame):

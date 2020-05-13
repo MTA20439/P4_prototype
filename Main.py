@@ -1,6 +1,5 @@
 import threading
-
-import numpy as np
+import keyboard
 import pyfirmata
 import time
 
@@ -9,13 +8,46 @@ from additiveStream import AdditiveStream
 from GUI import PrototypeGUI
 
 
+class ReadOctavesThread(threading.Thread):
+    def __init__(self, synthesizer, breadBoard, joystickPin):
+        threading.Thread.__init__(self)
+        self.synthesizer = synthesizer
+        self.breadBoard = breadBoard
+        self.joystickPin = joystickPin
+        self.init_pin(joystickPin)
+
+    def run(self):
+        while True:
+            if keyboard.is_pressed('w'):
+                self.synthesizer.octave = 1
+                print("octave 1")
+
+            elif keyboard.is_pressed('a'):
+                self.synthesizer.octave = 2
+                print("octave 2")
+
+            elif keyboard.is_pressed('d'):
+                self.synthesizer.octave = 3
+                print("octave 3")
+
+            elif keyboard.is_pressed('s'):
+                self.synthesizer.octave = 4
+                print("octave 4")
+
+            time.sleep(0.1)
+
+    def init_pin(self, pin):
+        self.breadBoard.digital[pin].mode = pyfirmata.INPUT
+
+
 class ReadPiezoThread(threading.Thread):
-    def __init__(self, pin, sound, audio_player, led):
+    def __init__(self, pin, synthesizer, audio_player, led, note):
         threading.Thread.__init__(self)
         self.pin = pin
         self.audio_player = audio_player
-        self.sound = sound
+        self.synthesizer = synthesizer
         self.led = led
+        self.note = note
         self.init_setup_pin()
         self.isPlaying = False
         self.ledAvailable = True
@@ -28,10 +60,12 @@ class ReadPiezoThread(threading.Thread):
 
                 if value > 0.7:
                     if self.isPlaying is False:
-                        self.audio_player.play(sample=self.sound)
+
+                        self.audio_player.play(sample=self.synthesizer.genKarplusStrong(self.note))
                         self.isPlaying = True
                         if self.ledAvailable is True:
                             board.digital[self.led].write(1)
+
                 else:
                     if self.ledAvailable is True:
                         board.digital[self.led].write(0)
@@ -82,25 +116,25 @@ it.start()
 player = AdditiveStream()
 
 """Arrays for storing some initial data"""
-notes = [261.63, 293.66, 329.63, 369.99, 415.30, 466.16]
-pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of pins
+notes = [65.41, 73.42, 82.41, 92.50, 103.83, 116.54]
+pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of piezo input pins
 leds = [8, 9, 10, 11, 12, 13]
-sounds = []  # array for storing sounds we want the threads to play
 piezoThreads = []
 
 samplerate = 44100
 board.digital[5].mode = pyfirmata.INPUT
 
-"""A for loop for making sounds"""
-for i in notes:
-    string = StringSynthesizer(samplerate, 1, 2, i, 1)
-    sounds.append(string)
+synth = StringSynthesizer(samplerate, 1, 2, 1)
+
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(sounds) - 4):
-    t = ReadPiezoThread(pins[i], sounds[i].getString(), player, leds[i])
+for i in range(len(pins)):
+    t = ReadPiezoThread(pins[i], synth, player, leds[i], notes[i])
     piezoThreads.append(t)
     t.start()
+
+octaveThread = ReadOctavesThread(synth, board, 2)
+octaveThread.start()
 
 """Booleans for checking if GUI is running"""
 isPressed = False
@@ -129,6 +163,9 @@ while True:
                 interface.start()  # Starts the GUI
 
                 windowExists = True  # Says that the gui has been started
+
+            isPressed = True
+
 
     else:
         if isPressed is True:
