@@ -9,25 +9,20 @@ class StringSynthesizer:
         self.amplitude = amplitude
         self.duration = duration
         self.decay = decay
-        self.init_makeSomeNoise()
         self.octave = 1
 
-    def init_makeSomeNoise(self):
-        self.waveform = np.array(
+    def makeSomeNoise(self):
+        wave = np.array(
             [(np.random.uniform(-self.amplitude, self.amplitude)) for _ in range(int(self.samplerate * self.duration))])
+        return wave
 
     def genKarplusStrong(self, note_freq):
+        waveform = self.makeSomeNoise()
         note = note_freq * self.octave
         delay = int(self.samplerate / note)
         decay = float(np.clip(0, 1, float(self.decay)))
-        output = self.waveform
-        # idx = delay
-        # while idx < len(output):
-        # output[idx] = decay * 0.5 * (output[idx - delay] + output[idx - delay - 1])
-        # idx += 1
+        output = waveform
 
         for idx in range(delay, len(output)):
             output[idx] = decay * 0.5 * (output[idx - delay] + output[idx - delay - 1])
-        string = output
-
-        return string
+        return output

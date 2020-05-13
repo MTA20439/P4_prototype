@@ -117,7 +117,7 @@ player = AdditiveStream()
 
 """Arrays for storing some initial data"""
 notes = [65.41, 73.42, 82.41, 92.50, 103.83, 116.54]
-pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of piezo input pins
+pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of pins
 leds = [8, 9, 10, 11, 12, 13]
 piezoThreads = []
 
@@ -128,7 +128,7 @@ synth = StringSynthesizer(samplerate, 1, 2, 1)
 
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(pins)):
+for i in range(len(pins)-4):
     t = ReadPiezoThread(pins[i], synth, player, leds[i], notes[i])
     piezoThreads.append(t)
     t.start()
