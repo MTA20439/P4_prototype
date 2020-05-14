@@ -20,48 +20,48 @@ class ReadOctavesThread(threading.Thread):
 
     def run(self):
         while True:
-            valueX = self.analog_inputX.read()  # for reading values of x
-            valueY = self.analog_inputY.read()  # for reading values of Y
-
-            if valueX >= 511 and valueY >= 1023:
-                if self.currentPosition != 1:
-                    self.synthesizer.octave = 1
-                    self.currentPosition = 1
-                    print("octave 1")
-
-            elif valueX >= 0 and valueY >= 511:
-                if self.currentPosition != 2:
-                    self.synthesizer.octave = 2
-                    self.currentPosition = 2
-                    print("octave 2")
-
-            elif valueX >= 1023 and valueY >= 511:
-                if self.currentPosition != 3:
-                    self.synthesizer.octave = 3
-                    self.currentPosition = 3
-                    print("octave 3")
-
-            elif valueX >= 511 and valueY >= 0:
-                if self.currentPosition != 4:
-                    self.synthesizer.octave = 4
-                    self.currentPosition = 4
-                    print("octave 4")
-
-            # if keyboard.is_pressed('w'):
-            #     self.synthesizer.octave = 1
-            #     print("octave 1")
+            # valueX = self.analog_inputX.read()  # for reading values of x
+            # valueY = self.analog_inputY.read()  # for reading values of Y
             #
-            # elif keyboard.is_pressed('a'):
-            #     self.synthesizer.octave = 2
-            #     print("octave 2")
+            # if valueX >= 511 and valueY >= 1023:
+            #     if self.currentPosition != 1:
+            #         self.synthesizer.octave = 1
+            #         self.currentPosition = 1
+            #         print("octave 1")
             #
-            # elif keyboard.is_pressed('d'):
-            #     self.synthesizer.octave = 3
-            #     print("octave 3")
+            # elif valueX >= 0 and valueY >= 511:
+            #     if self.currentPosition != 2:
+            #         self.synthesizer.octave = 2
+            #         self.currentPosition = 2
+            #         print("octave 2")
             #
-            # elif keyboard.is_pressed('s'):
-            #     self.synthesizer.octave = 4
-            #     print("octave 4")
+            # elif valueX >= 1023 and valueY >= 511:
+            #     if self.currentPosition != 3:
+            #         self.synthesizer.octave = 3
+            #         self.currentPosition = 3
+            #         print("octave 3")
+            #
+            # elif valueX >= 511 and valueY >= 0:
+            #     if self.currentPosition != 4:
+            #         self.synthesizer.octave = 4
+            #         self.currentPosition = 4
+            #         print("octave 4")
+
+            if keyboard.is_pressed('w'):
+                self.synthesizer.octave = 1
+                print("octave 1")
+
+            elif keyboard.is_pressed('a'):
+                self.synthesizer.octave = 2
+                print("octave 2")
+
+            elif keyboard.is_pressed('d'):
+                self.synthesizer.octave = 3
+                print("octave 3")
+
+            elif keyboard.is_pressed('s'):
+                self.synthesizer.octave = 4
+                print("octave 4")
 
             time.sleep(0.1)
 
@@ -158,7 +158,7 @@ synth = StringSynthesizer(samplerate, 1, 2, 1)
 
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(pins)):
+for i in range(len(pins)-4):
     t = ReadPiezoThread(pins[i], synth, player, leds[i], notes[i])
     piezoThreads.append(t)
     t.start()
