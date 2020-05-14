@@ -124,7 +124,7 @@ piezoThreads = []
 samplerate = 44100
 board.digital[5].mode = pyfirmata.INPUT
 
-synth = StringSynthesizer(samplerate, 1, 2, 1)
+synth = StringSynthesizer(samplerate, 1, 2, 4)
 
 
 """A for loop for making threads and assigning them sounds"""
