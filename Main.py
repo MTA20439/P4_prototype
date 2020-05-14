@@ -9,35 +9,65 @@ from GUI import PrototypeGUI
 
 
 class ReadOctavesThread(threading.Thread):
-    def __init__(self, synthesizer, breadBoard, joystickPin):
+    def __init__(self, synthesizer, breadBoard, XPin, YPin):
         threading.Thread.__init__(self)
         self.synthesizer = synthesizer
         self.breadBoard = breadBoard
-        self.joystickPin = joystickPin
-        self.init_pin(joystickPin)
+        self.currentPosition = 1
+        self.XPin = XPin
+        self.YPin = YPin
+        self.init_pin(XPin, YPin)
 
     def run(self):
         while True:
-            if keyboard.is_pressed('w'):
-                self.synthesizer.octave = 1
-                print("octave 1")
+            valueX = self.analog_inputX.read()  # for reading values of x
+            valueY = self.analog_inputY.read()  # for reading values of Y
 
-            elif keyboard.is_pressed('a'):
-                self.synthesizer.octave = 2
-                print("octave 2")
+            if valueX >= 511 and valueY >= 1023:
+                if self.currentPosition != 1:
+                    self.synthesizer.octave = 1
+                    self.currentPosition = 1
+                    print("octave 1")
 
-            elif keyboard.is_pressed('d'):
-                self.synthesizer.octave = 3
-                print("octave 3")
+            elif valueX >= 0 and valueY >= 511:
+                if self.currentPosition != 2:
+                    self.synthesizer.octave = 2
+                    self.currentPosition = 2
+                    print("octave 2")
 
-            elif keyboard.is_pressed('s'):
-                self.synthesizer.octave = 4
-                print("octave 4")
+            elif valueX >= 1023 and valueY >= 511:
+                if self.currentPosition != 3:
+                    self.synthesizer.octave = 3
+                    self.currentPosition = 3
+                    print("octave 3")
+
+            elif valueX >= 511 and valueY >= 0:
+                if self.currentPosition != 4:
+                    self.synthesizer.octave = 4
+                    self.currentPosition = 4
+                    print("octave 4")
+
+            # if keyboard.is_pressed('w'):
+            #     self.synthesizer.octave = 1
+            #     print("octave 1")
+            #
+            # elif keyboard.is_pressed('a'):
+            #     self.synthesizer.octave = 2
+            #     print("octave 2")
+            #
+            # elif keyboard.is_pressed('d'):
+            #     self.synthesizer.octave = 3
+            #     print("octave 3")
+            #
+            # elif keyboard.is_pressed('s'):
+            #     self.synthesizer.octave = 4
+            #     print("octave 4")
 
             time.sleep(0.1)
 
-    def init_pin(self, pin):
-        self.breadBoard.digital[pin].mode = pyfirmata.INPUT
+    def init_pin(self, pin1, pin2):
+        self.analog_inputX = board.get_pin(pin1)
+        self.analog_inputY = board.get_pin(pin2)
 
 
 class ReadPiezoThread(threading.Thread):
@@ -133,7 +163,7 @@ for i in range(len(pins)):
     piezoThreads.append(t)
     t.start()
 
-octaveThread = ReadOctavesThread(synth, board, 2)
+octaveThread = ReadOctavesThread(synth, board, 'a:4:i', 'a:5:i')
 octaveThread.start()
 
 """Booleans for checking if GUI is running"""
@@ -192,7 +222,7 @@ while True:
             windowExists = False
 
             for i in piezoThreads:
-                i.ledAvailable = False
+                i.ledAvailable = True
 
             print("-------------------")
             print("Learning mode is off")

@@ -171,7 +171,7 @@ class PlayFrame(MainMenu):
                                    font=("Tofino Pro Personal Con Md", 26))
             self.nextButton.grid(row=2, column=0, sticky="W", pady=100, padx=400)
 
-            t = self.LightUpLed(led_sequence, master.board)
+            t = self.LightUpLed(master=master, arr=led_sequence, board=master.board)
             t.start()
             master.threadList.append(t)
 
@@ -193,7 +193,7 @@ class PlayFrame(MainMenu):
                                    font=("Tofino Pro Personal Con Md", 26))
             self.nextButton.grid(row=2, column=0, sticky="W", pady=100, padx=400)
 
-            t = self.LightUpLed(led_sequence, master.board)
+            t = self.LightUpLed(master=master, arr=led_sequence, board=master.board)
             t.start()
             master.threadList.append(t)
 
