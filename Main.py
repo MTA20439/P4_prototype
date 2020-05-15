@@ -88,10 +88,10 @@ class ReadPiezoThread(threading.Thread):
             value = self.analog_input.read()  # for reading the analog pin
             if value is not None:
 
-                if value > 0.7:
+                if value > 0.005:
                     if self.isPlaying is False:
 
-                        self.audio_player.play(sample=self.synthesizer.genKarplusStrong(self.note))
+                        self.audio_player.play(self.synthesizer.generateGuitarString(self.note))
                         self.isPlaying = True
                         if self.ledAvailable is True:
                             board.digital[self.led].write(1)
@@ -136,7 +136,7 @@ class gui:
 
 
 """setting up which usb port is the arduino connected to"""
-board = pyfirmata.Arduino('COM3')  # might want to change this based on your pc
+board = pyfirmata.ArduinoMega('COM3')  # might want to change this based on your pc
 
 """Initialize communication with the arduino board"""
 it = pyfirmata.util.Iterator(board)
@@ -148,22 +148,22 @@ player = AdditiveStream()
 """Arrays for storing some initial data"""
 notes = [65.41, 73.42, 82.41, 92.50, 103.83, 116.54]
 pins = ['a:0:i', 'a:1:i', 'a:2:i', 'a:3:i', 'a:4:i', 'a:5:i']  # array of pins
-leds = [8, 9, 10, 11, 12, 13]
+leds = [2, 3, 4, 5, 6, 7]
 piezoThreads = []
 
 samplerate = 44100
-board.digital[5].mode = pyfirmata.INPUT
+board.digital[12].mode = pyfirmata.INPUT
 
 synth = StringSynthesizer(samplerate, 1, 2, 4)
 
 
 """A for loop for making threads and assigning them sounds"""
-for i in range(len(pins)-4):
+for i in range(len(pins)):
     t = ReadPiezoThread(pins[i], synth, player, leds[i], notes[i])
     piezoThreads.append(t)
     t.start()
 
-octaveThread = ReadOctavesThread(synth, board, 'a:4:i', 'a:5:i')
+octaveThread = ReadOctavesThread(synth, board, 'a:8:i', 'a:9:i')
 octaveThread.start()
 
 """Booleans for checking if GUI is running"""
@@ -176,7 +176,7 @@ interface = gui(board)
 print("setup done")
 
 while True:
-    value = board.digital[5].read()
+    value = board.digital[12].read()
 
     """Checks if button has been pressed"""
     if value is True:
@@ -185,7 +185,7 @@ while True:
             print("-------------------")
             print("Learning mode is on")
             if windowExists is False:
-                board.digital[6].write(1)  # Lights up the learning mode led
+                board.digital[13].write(1)  # Lights up the learning mode led
 
                 for i in piezoThreads:
                     i.ledAvailable = False
@@ -218,8 +218,8 @@ while True:
             interface = gui(board)
             del old_object
 
-            board.digital[6].write(0)  # Turns of the learning mode led off
-            windowExists = False
+            board.digital[13].write(0)  # Turns of the learning mode led off
+            windowExists = False1
 
             for i in piezoThreads:
                 i.ledAvailable = True
