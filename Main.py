@@ -9,7 +9,7 @@ from GUI import PrototypeGUI
 
 
 class ReadOctavesThread(threading.Thread):
-    def __init__(self, synthesizer, breadBoard, XPin, YPin):
+    def __init__(self, synthesizer, breadBoard, XPin, YPin, leds):
         threading.Thread.__init__(self)
         self.synthesizer = synthesizer
         self.breadBoard = breadBoard
@@ -17,37 +17,27 @@ class ReadOctavesThread(threading.Thread):
         self.XPin = XPin
         self.YPin = YPin
         self.init_pin(self.XPin, self.YPin)
+        self.leds = leds
+        changePosition(1)
 
     def run(self):
         while True:
             valueX = self.analog_inputX.read() # for reading values of x
             valueY = self.analog_inputY.read() # for reading values of Y
             if valueX is not None and valueY is not None:
-                valueX = (valueX-0.5)*2
-                valueY = (valueY-0.5)*2
+                valueX = (valueX - 0.5) * 2
+                valueY = (valueY - 0.5) * 2
                 if valueX >= 0.9 and abs(valueY) < 1:
-                    if self.currentPosition != 1:
-                        self.synthesizer.octave = 1
-                        self.currentPosition = 1
-                        print("octave 1")
+                    self.changePosition(1)
             
                 elif abs(valueX) < 1 and valueY >= 0.9:
-                    if self.currentPosition != 2:
-                        self.synthesizer.octave = 2
-                        self.currentPosition = 2
-                        print("octave 2")
+                    self.changePosition(2)
             
                 elif valueX <= -0.9 and abs(valueY) < 1:
-                    if self.currentPosition != 3:
-                        self.synthesizer.octave = 3
-                        self.currentPosition = 3
-                        print("octave 3")
+                    self.changePosition(3)
             
                 elif abs(valueX) < 1 and valueY <= -0.9:
-                    if self.currentPosition != 4:
-                        self.synthesizer.octave = 4
-                        self.currentPosition = 4
-                        print("octave 4")
+                    self.changePosition(4)
 
             #if keyboard.is_pressed('w'):
             #    self.synthesizer.octave = 1
@@ -67,9 +57,19 @@ class ReadOctavesThread(threading.Thread):
 
             time.sleep(0.1)
 
+    def changePosition(self, position):
+        if self.currentPosition != position:
+            self.synthesizer.octave = position
+            self.currentPosition = position
+            for idx in range(len(self.leds)):
+                self.breadBoard.digital[self.leds[idx]].write(1 if idx == position - 1 else 0)
+            print("octave " + str(position))
+
     def init_pin(self, pin1, pin2):
         self.analog_inputX = board.get_pin(pin1)
         self.analog_inputY = board.get_pin(pin2)
+        
+
 
 
 class ReadPiezoThread(threading.Thread):
@@ -90,7 +90,7 @@ class ReadPiezoThread(threading.Thread):
             value = self.analog_input.read()  # for reading the analog pin
             if value is not None:
 
-                if value > 0.005:
+                if value > 0.001:
                     if self.isPlaying is False:
 
                         self.audio_player.play(self.synthesizer.generateGuitarString(self.note))
@@ -139,7 +139,6 @@ class gui:
 
 """setting up which usb port is the arduino connected to"""
 board = pyfirmata.ArduinoMega('COM3')  # might want to change this based on your pc
-
 """Initialize communication with the arduino board"""
 it = pyfirmata.util.Iterator(board)
 it.start()
@@ -165,7 +164,7 @@ for i in range(len(pins)):
     piezoThreads.append(t)
     t.start()
 
-octaveThread = ReadOctavesThread(synth, board, 'a:8:i', 'a:9:i')
+octaveThread = ReadOctavesThread(synth, board, 'a:8:i', 'a:9:i', [47,51,45,49])
 octaveThread.start()
 
 """Booleans for checking if GUI is running"""
