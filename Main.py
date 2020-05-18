@@ -18,7 +18,7 @@ class ReadOctavesThread(threading.Thread):
         self.YPin = YPin
         self.init_pin(self.XPin, self.YPin)
         self.leds = leds
-        changePosition(1)
+        self.changePosition(1)
 
     def run(self):
         while True:
