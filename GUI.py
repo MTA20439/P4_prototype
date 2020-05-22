@@ -20,34 +20,6 @@ myColor6 = '#FFA85C'
 myColor7 = '#E7BC3D'
 
 
-# class LightUpLed(threading.Thread):
-#     def __init__(self, arr, board):
-#         threading.Thread.__init__(self)
-#         self.board = board
-#         self.arr = arr
-#         self._is_running = True
-#
-#     def run(self):
-#         i = 0
-#         while self._is_running:
-#             #print(self.arr[i])
-#             self.board.digital[int(self.arr[i])].write(1)
-#             time.sleep(1)
-#             self.board.digital[int(self.arr[i])].write(0)
-#             time.sleep(0.5)
-#
-#             i += 1
-#             if i >= len(self.arr):
-#                 print("~~~~~~~~~~~~")
-#                 print("repeating...")
-#                 i = 0
-#                 time.sleep(2)
-#
-#     def stop(self):
-#         self._is_running = False
-#         print("song thread ended")
-
-
 class PrototypeGUI(tk.Tk):
     def __init__(self, board, *args, **kwargs):  # Function that creates window for prototype GUI
         tk.Tk.__init__(self, *args, **kwargs)
@@ -312,7 +284,7 @@ class PlayFrame(MainMenu):
             print("song thread ended")
 
 
-class EndFrame(tk.Frame):
+class EndFrame(MainMenu):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         tk.Frame.config(self, background=myColor7)
@@ -342,10 +314,3 @@ class EndFrame(tk.Frame):
         self.newButton.config(command=lambda: master.switch_frame(MainMenu))
 
 
-# if __name__ == "__main__":
-#     GUI = PrototypeGUI()
-#     GUI.resvar = '960x720'
-#     GUI.config(bg=myColor3)
-#     GUI.geometry(GUI.resvar)
-#     GUI.resizable(0, 0)
-#     GUI.mainloop()
