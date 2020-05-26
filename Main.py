@@ -81,31 +81,31 @@ class ReadPiezoThread(threading.Thread):
         self.led = led
         self.note = note
         self.init_setup_pin()
-        self.isPlaying = False
-        self.ledAvailable = True
+        self.avgVal = 0
+        self.preAvgVal = 0
 
     def run(self):
         while True:
 
-            value = self.analog_input.read()  # for reading the analog pin
-            if value is not None:
-
-                if value > 0.001:
-                    if self.isPlaying is False:
-
-                        self.audio_player.play(self.synthesizer.generateGuitarString(self.note))
-                        self.isPlaying = True
-                        if self.ledAvailable is True:
-                            board.digital[self.led].write(1)
-
+            value = self.analog_input.read() 
+            if value != None:
+                self.avgVal = ((value + (self.avgVal*24))/25) if value != 0 else self.avgVal
+                if (self.avgVal - self.preAvgVal) > 0.0001:
+                    self.avgVal = value
+                    #print(str(self.note) + " : " + str(self.avgVal - self.preAvgVal))
+                    delta = time.time()
+                    self.audio_player.play(self.synthesizer.generateGuitarString(self.note))
+                    delta = time.time()-delta
+                    print(str(self.note) + " : " + str(delta))
+                    board.digital[self.led].write(1)
+                    time.sleep(0.1)
                 else:
-                    if self.ledAvailable is True:
-                        board.digital[self.led].write(0)
+                    board.digital[self.led].write(0)
+            
 
-                    if self.isPlaying is True:
-                        self.isPlaying = False
-
-            time.sleep(0.1)
+                self.preAvgVal = self.avgVal
+            
+            time.sleep(0.01)
 
     def init_setup_pin(self):
         self.analog_input = board.get_pin(self.pin)
@@ -142,6 +142,7 @@ board = pyfirmata.ArduinoMega('COM3')  # might want to change this based on your
 """Initialize communication with the arduino board"""
 it = pyfirmata.util.Iterator(board)
 it.start()
+time.sleep(0.01)
 
 """Initialize the player"""
 player = AdditiveStream()
